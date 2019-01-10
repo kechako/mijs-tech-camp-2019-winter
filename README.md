@@ -6,13 +6,13 @@ Go 言語による WebAssembly についてまとめ。
 
 ## WebAssembly とは
 
-Comming soon...
+Comming soon...?
 
 ## サンプルプログラムについて
 
 - [hello](/hello)
   - Hello, WebAssembly
-  --ブラウザーのデバッグコンソールに出力される
+  - ブラウザーのデバッグコンソールに出力される
 - [server](/server)
   - 簡単な Web サーバー
 
