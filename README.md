@@ -231,6 +231,14 @@ WebAssembly のメモリー空間と JavaScript のメモリー空間は別で�
 
 例えば Go 言語の main 関数を呼び出す場合、JavaScript 側からコマンドライン引数や環境変数を指定することができるが、そのデータの受け渡しは、`Instance.exports.mem.buffer` をラップした `Uint8Array` を使用して、WebAssembly のメモリーバッファーに直接書き込むことで実現している。
 
+## wasm_exec.js
+
+`wasm_exec.js` では、WebAssembly と JavaScript の連携に必要な機能が実装されている。
+
+Go から呼び出される一部のシステムコールは、このスクリプト内で定義されている。
+
+`Go` JavaScript オブジェクトでは、WebAssembly と JavaScript API を連携するためのメソッド等が実装されているので、Go でビルドされた WebAssembly アプリケーションを実行するのにこのオブジェクトは必須である。
+
 ## 参考リンク
 
 - [Go Wiki](https://github.com/golang/go/wiki/WebAssembly)
