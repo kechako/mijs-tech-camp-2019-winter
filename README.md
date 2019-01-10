@@ -1,5 +1,9 @@
 # MIJS Tech Camp 2019 Winter - WebAssembly
 
+MIJS ニューテクノロジー委員会 2019 年冬合宿 WebAssembly 分科会用のメモ。
+
+Go 言語による WebAssembly についてまとめ。
+
 ## WebAssembly とは
 
 Comming soon...
