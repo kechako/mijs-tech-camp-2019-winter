@@ -2,6 +2,14 @@
 
 ## WebAssembly とは
 
+## サンプルプログラムについて
+
+- [hello](/hello)
+  - Hello, WebAssembly
+  --ブラウザーのデバッグコンソールに出力される
+- [server](/server)
+  - 簡単な Web サーバー
+
 ## Golang で WebAssembly
 
 Go 1.11 以降で WebAssembly がサポートされた。
