@@ -2,6 +2,8 @@
 
 ## WebAssembly とは
 
+Comming soon...
+
 ## サンプルプログラムについて
 
 - [hello](/hello)
@@ -197,8 +199,43 @@ func main() {
 }
 ```
 
+## JavaScript API
+
+### WebAssembly JavaScript オブジェクト
+
+`WebAssembly` JavaScript オブジェクトは、すべての WebAssembly に関する機能の名前空間として振る舞う。
+
+### WebAssembly.instantiateStreaming() 関数
+
+``` js
+Promise<ResultObject> WebAssembly.instantiateStreaming(source, importObject);
+```
+
+`WebAssembly.instantiateStreaming()` 関数はソースのストリームから直接 WebAssembly モジュールをコンパイルしてインスタンス化する。
+
+`ResultObject` の2つのフィールド
+- `module`
+  - コンパイルされた `WebAssembly.Module` オブジェクト。
+  - この `Module` は、再度インスタンス化、`postMessage()` 経由での共有、IndexDB へのキャッシュが可能。
+- `instance`
+  - すべてのエクスポートされた WebAssembly 関数を含む `WebAssembly.Instance` オブジェクト。
+
+## WebAssembly のメモリー空間との連携
+
+WebAssembly のメモリー空間と JavaScript のメモリー空間は別で管理されている。
+
+`WebAssembly.Instance.exports.mem` は、WebAssembly インスタンスのメモリー空間を表す `WebAssembly.Memory` オブジェクト。
+このオブジェクトの `buffer` プロパティは、メモリに関連付けられているバッファーを返す。
+このバッファーを、`Uint8Array` などの `TypedArray` でラップすることで、バッファー上の任意のオフセットにアクセスすることができる。
+これにより、WebAssembly と JavaScript のメモリー空間の間で連携することができる。
+
+例えば Go 言語の main 関数を呼び出す場合、JavaScript 側からコマンドライン引数や環境変数を指定することができるが、そのデータの受け渡しは、`Instance.exports.mem.buffer` をラップした `Uint8Array` を使用して、WebAssembly のメモリーバッファーに直接書き込むことで実現している。
+
 ## 参考リンク
 
 - [Go Wiki](https://github.com/golang/go/wiki/WebAssembly)
 - [syscall/js](https://golang.org/pkg/syscall/js/)
+- [WebAssembly](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/WebAssembly)
+- [WebAssembly.instantiateStreaming()](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/WebAssembly/instantiateStreaming)
+- [WebAssembly Examples](https://github.com/mdn/webassembly-examples)
 
