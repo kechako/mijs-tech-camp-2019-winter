@@ -96,7 +96,101 @@ func main() {
 
 http://localhost:8080/index.html を開き、JavaScript のデバッグコンソールを開くと、出力を見れる。
 
+## DOM へのインタラクト
+
+`syscall/js` パッケージを使用すると、DOM にインタラクトできる。
+
+``` go
+type Value struct {
+    // contains filtered or unexported fields
+}
+```
+
+`Value` は、JavaScript の値を表す。
+
+``` go
+func Global() Value
+```
+
+`Global` は、JavaScript のグローバルオブジェクト（通常は `window` または `global`）を返す。
+
+``` go
+func Null() Value
+```
+
+`Null` は、JavaScript の `null` 値を返す。
+
+``` go
+func Undefined() Value
+```
+
+`Undefined` は、JavaScript の `undefined` 値を返す。
+
+``` go
+func ValueOf(x interface{}) Value
+```
+
+`ValueOf` は、`x` を JavaScript の値として返す。
+
+| Go                     | JavaScript             |
+| ---------------------- | ---------------------- |
+| js.Value               | [its value]            |
+| js.TypedArray          | typed array            |
+| js.Callback            | function               |
+| nil                    | null                   |
+| bool                   | boolean                |
+| integers and floats    | number                 |
+| string                 | string                 |
+| []interface{}          | new array              |
+| map[string]interface{} | new object             |
+
+``` go
+func (v Value) Get(p string) Value
+```
+
+`Get` は、JavaScript の値 `v` のプロパティ `p` を返す。
+
+``` go
+func (v Value) Set(p string, x interface{})
+```
+
+`Set` は、JavaScript の値 `v` のプロパティ `p` に `ValueOf(x)` を設定する。
+
+``` go
+type Callback struct {
+    Value // the JavaScript function that queues the callback for execution
+    // contains filtered or unexported fields
+}
+```
+
+`Callback` は、JavaScript のコールバックとして使用するためにラップされた Go の関数。
+
+``` go
+func NewCallback(fn func(args []Value)) Callback
+```
+
+`NewCallback` は、ラップされたコールバック関数を返す。
+
+``` go
+package main
+
+import (
+    "fmt"
+    "syscall/js"
+)
+
+func main() {
+    var cb js.Callback
+    cb = js.NewCallback(func(args []js.Value) {
+        fmt.Println("button clicked")
+        cb.Release() // release the callback if the button will not be clicked again
+    })
+    js.Global().Get("document").Call("getElementById", "myButton").Call("addEventListener", "click", cb)
+}
+```
+
 ## 参考リンク
 
 - [Go Wiki](https://github.com/golang/go/wiki/WebAssembly)
+- [syscall/js](https://golang.org/pkg/syscall/js/)
 
