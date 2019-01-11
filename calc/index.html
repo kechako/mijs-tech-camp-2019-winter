@@ -1,0 +1,44 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+  </head>
+  <body>
+    <form>
+      <p>
+        <input type="number" name="numa" id="numa" />
+        +
+        <input type="number" name="numb" id="numb" />
+        =
+        <input type="number" name="result" id="result" readonly />
+      </p>
+      <p><input type="button" name="calc" id="calc" value="Calc" disabled />
+    </form>
+    <script>
+    var numaText = document.getElementById("numa");
+    var numbText = document.getElementById("numb");
+    var resultText = document.getElementById("result");
+    var calcButton = document.getElementById("calc");
+
+    if (!WebAssembly.instantiateStreaming) { // polyfill
+      WebAssembly.instantiateStreaming = async (resp, importObject) => {
+        const source = await (await resp).arrayBuffer();
+        return await WebAssembly.instantiate(source, importObject);
+      };
+    }
+
+    var inst = null;
+
+    calcButton.addEventListener("click", () => {
+      var a = numaText.value;
+      var b = numbText.value;
+      var result = inst.exports.add(a, b);
+      resultText.value = result;
+    });
+
+    WebAssembly.instantiateStreaming(fetch("calc.wasm"), {}).then((result) => {
+      inst = result.instance;
+      calcButton.disabled = false;
+    });
+    </script>
+  </body>
+</html>
