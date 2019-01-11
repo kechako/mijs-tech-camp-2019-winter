@@ -207,6 +207,8 @@ func main() {
 }
 ```
 
+Go 1.12 より、`Callback` 構造体と `NewCallback` 関数は、`Func` 構造体と `FuncOf` 関数にリネームされている。
+
 ## JavaScript API
 
 ### WebAssembly JavaScript オブジェクト
