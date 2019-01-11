@@ -228,16 +228,23 @@ Promise<ResultObject> WebAssembly.instantiateStreaming(source, importObject);
 - `instance`
   - すべてのエクスポートされた WebAssembly 関数を含む `WebAssembly.Instance` オブジェクト。
 
-## WebAssembly のメモリー空間との連携
+## WebAssembly のメモリー空間
 
-WebAssembly のメモリー空間と JavaScript のメモリー空間は別で管理されている。
+WebAssembly からアクセスされる線形メモリーは、WebAssembly.Memory のインスタンスである。
+これは、生のバイト列を持つリサイズ可能な ArrayBuffer である。
 
-`WebAssembly.Instance.exports.mem` は、WebAssembly インスタンスのメモリー空間を表す `WebAssembly.Memory` オブジェクト。
-このオブジェクトの `buffer` プロパティは、メモリに関連付けられているバッファーを返す。
-このバッファーを、`Uint8Array` などの `TypedArray` でラップすることで、バッファー上の任意のオフセットにアクセスすることができる。
-これにより、WebAssembly と JavaScript のメモリー空間の間で連携することができる。
+JavaScript から、WebAssembly の線形メモリーにアクセスする方法として、以下の2つの方法がある:
 
-例えば Go 言語の main 関数を呼び出す場合、JavaScript 側からコマンドライン引数や環境変数を指定することができるが、そのデータの受け渡しは、`Instance.exports.mem.buffer` をラップした `Uint8Array` を使用して、WebAssembly のメモリーバッファーに直接書き込むことで実現している。
+1. JavaScript で生成した WebAssembly.Memory のインスタンスを、importObject として WebAssemly に渡す。
+2. WebAssembly のメモリーをエクスポートする。
+  - `mem` という名称でエクスポートした場合、`WebAssembly.Instance.exports.mem` として JavaScript から参照できる。
+  - JavaScript からは WebAssembly.Memory のインスタンスとして参照できる。
+
+どちらの方法も、JavaScript からは WebAssembly.Memory のインスタンスとして操作可能なので、このインスタンスの `buffer` プロパティ（メモリーに関連付けられているバッファーを返す）を、`Uint8Array` などの `TypedArray` でオフセット、長さウィ指定してラップすることで、バッファー上の任意のオフセットにアクセスすることができる。
+
+Go 言語では、`mem` という名称で、WebAssembly の線形メモリーがエクスポートされている。
+
+Go 言語の main 関数を呼び出す場合、JavaScript 側からコマンドライン引数や環境変数を指定することができるが、そのデータの受け渡しは、`Instance.exports.mem.buffer` をラップした `Uint8Array` を使用して、WebAssembly のメモリーバッファーに直接書き込むことで実現している。
 
 ## wasm_exec.js
 
