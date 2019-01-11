@@ -1,11 +1,10 @@
 GOCMD=go
-TARGET=main.wasm
+TARGET=hello.wasm
 RMCMD=rm
 SERVERDIR=../server
 SERVERCMD=$(SERVERDIR)/server
 
-TESTSRCS = $(wildcard *_test.go)
-SRCS = $(filter-out $(TESTSRCS), $(wildcard *.go))
+SRCS = hello.go
 
 all: $(TARGET)
 
