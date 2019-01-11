@@ -17,6 +17,8 @@ Comming soon...?
   - WebAssembly 内のメモリーを JavaScript 側にエクスポートするサンプル。
 - [memimport](/memimport)
   - WebAssembly 内に JavaScript からメモリーをインポートするサンプル。
+- [calc](/calc)
+  - 入力された 2 つの値を足し合わせて結果を表示するだけのサンプル。
 - [server](/server)
   - 簡単な Web サーバー
 
