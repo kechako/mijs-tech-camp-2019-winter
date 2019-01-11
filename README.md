@@ -13,6 +13,10 @@ Comming soon...?
 - [hello](/hello)
   - Hello, WebAssembly
   - ブラウザーのデバッグコンソールに出力される
+- [memexport](/memexport)
+  - WebAssembly 内のメモリーを JavaScript 側にエクスポートするサンプル。
+- [memimport](/memimport)
+  - WebAssembly 内に JavaScript からメモリーをインポートするサンプル。
 - [server](/server)
   - 簡単な Web サーバー
 
@@ -250,4 +254,5 @@ Go から呼び出される一部のシステムコールは、このスクリ�
 - [WebAssembly](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/WebAssembly)
 - [WebAssembly.instantiateStreaming()](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/WebAssembly/instantiateStreaming)
 - [WebAssembly Examples](https://github.com/mdn/webassembly-examples)
+- [WebAssembly テキストフォーマットを理解する](https://developer.mozilla.org/ja/docs/WebAssembly/Understanding_the_text_format)
 
