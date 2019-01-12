@@ -4,10 +4,6 @@ MIJS ニューテクノロジー委員会 2019 年冬合宿 WebAssembly 分科�
 
 Go 言語による WebAssembly についてまとめ。
 
-## WebAssembly とは
-
-Comming soon...?
-
 ## サンプルプログラムについて
 
 - [hello](/hello)
