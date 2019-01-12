@@ -59,3 +59,16 @@ handlers:
   static_files: calc/calc.wasm
   upload: calc/calc.wasm
   mime_type: application/wasm
+
+- url: /resize/
+  static_files: resize/index.html
+  upload: resize/index.html
+
+- url: /resize/wasm_exec.js
+  static_files: resize/wasm_exec.js
+  upload: resize/wasm_exec.js
+
+- url: /resize/resize.wasm
+  static_files: resize/resize.wasm
+  upload: resize/resize.wasm
+  mime_type: application/wasm
