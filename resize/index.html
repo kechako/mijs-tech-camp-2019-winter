@@ -5,10 +5,16 @@
   </head>
   <body>
     <p><input type="file" id="file" name="file" disabled /></p>
+    <p>
+      <input type="button" id="resize" name="resize" value="Resize 1/10" disabled />
+      <input type="button" id="grayscale" name="grayscale" value="Grayscale" disabled />
+    </p>
     <p id="result"></p>
 
     <script>
     var fileInput = document.getElementById("file");
+    var resizeBtn = document.getElementById("resize");
+    var grayscaleBtn = document.getElementById("grayscale");
     var resultElm = document.getElementById("result");
 
     if (!WebAssembly.instantiateStreaming) { // polyfill
@@ -21,10 +27,21 @@
     var inst = null;
     var mem = null;
     var fileBytes = null;
-    var resizeBytes = null;
+    var convBytes = null;
 
     fileInput.addEventListener("change", (e) => {
-      var files = e.target.files;
+      var files = fileInput.files;
+      if (files.length == 0) {
+        return;
+      }
+
+      showImage(files[0]);
+      resizeBtn.disabled = false;
+      grayscaleBtn.disabled = false;
+    }, false);
+
+    resizeBtn.addEventListener("click", () => {
+      var files = fileInput.files;
       if (files.length == 0) {
         return;
       }
@@ -34,7 +51,23 @@
       reader.addEventListener("load", (e) => {
         var buf = e.target.result;
         fileBytes = new Uint8Array(buf);
-        resizeImage(fileBytes.length);
+        convertImage(fileBytes.length, 0);
+      });
+      reader.readAsArrayBuffer(file);
+    }, false);
+
+    grayscaleBtn.addEventListener("click", () => {
+      var files = fileInput.files;
+      if (files.length == 0) {
+        return;
+      }
+
+      var file = files[0];
+      var reader = new FileReader();
+      reader.addEventListener("load", (e) => {
+        var buf = e.target.result;
+        fileBytes = new Uint8Array(buf);
+        convertImage(fileBytes.length, 1);
       });
       reader.readAsArrayBuffer(file);
     }, false);
@@ -45,11 +78,13 @@
     }
 
     function setResult(offset, length, name) {
-      resizeBytes = new Uint8Array(mem.buffer, offset, length);
+      convBytes = new Uint8Array(mem.buffer, offset, length);
 
-      var objURL = URL.createObjectURL(
-        new Blob([resizeBytes], { type: "image/" + name})
-      );
+      showImage(new Blob([convBytes], { type: "image/" + name}));
+    }
+
+    function showImage(img) {
+      var objURL = URL.createObjectURL(img);
 
       var image = new Image();
       image.addEventListener("load", () => {

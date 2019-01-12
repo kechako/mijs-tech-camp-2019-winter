@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"image"
+	"image/color"
 	"image/gif"
 	"image/jpeg"
 	"image/png"
@@ -19,10 +20,10 @@ import (
 )
 
 type Resizer struct {
-	resizeImageFunc js.Func
-	shutdownFunc    js.Func
-	imageBytes      []byte
-	resizedBytes    []byte
+	convertImageFunc js.Func
+	shutdownFunc     js.Func
+	imageBytes       []byte
+	convertedBytes   []byte
 
 	done context.CancelFunc
 }
@@ -35,14 +36,14 @@ func NewResizer() *Resizer {
 }
 
 func (r *Resizer) init() {
-	r.resizeImageFunc = js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-		if len(args) == 0 {
+	r.convertImageFunc = js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+		if len(args) < 2 {
 			return nil
 		}
 
-		return r.resizeImage(args[0].Int())
+		return r.convertImage(args[0].Int(), ConvertMode(args[1].Int()))
 	})
-	js.Global().Set("resizeImage", r.resizeImageFunc)
+	js.Global().Set("convertImage", r.convertImageFunc)
 
 	r.shutdownFunc = js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 		if r.done != nil {
@@ -55,7 +56,7 @@ func (r *Resizer) init() {
 }
 
 func (r *Resizer) Close() error {
-	r.resizeImageFunc.Release()
+	r.convertImageFunc.Release()
 	r.shutdownFunc.Release()
 
 	fmt.Println("Closed")
@@ -74,7 +75,14 @@ func (r *Resizer) Run(ctx context.Context) error {
 	return nil
 }
 
-func (r *Resizer) resizeImage(length int) error {
+type ConvertMode int
+
+const (
+	ConvertModeReize ConvertMode = iota
+	ConvertModeGrayscale
+)
+
+func (r *Resizer) convertImage(length int, mode ConvertMode) error {
 	r.imageBytes = make([]byte, length)
 	offset := slicePointer(r.imageBytes)
 	js.Global().Call("setFileBytesToMem", offset)
@@ -88,18 +96,23 @@ func (r *Resizer) resizeImage(length int) error {
 	}
 	fmt.Printf("source image type : %s\n", name)
 
-	size := img.Bounds().Size()
-	resizedImg := resize.Resize(uint(size.X/10), uint(size.Y/10), img, resize.Lanczos3)
+	var convImage image.Image
 
-	var rbuf bytes.Buffer
+	switch mode {
+	case ConvertModeReize:
+		convImage = r.resizeImage(img)
+	case ConvertModeGrayscale:
+		convImage = r.grayscaleImage(img)
+	}
 
+	var convBuf bytes.Buffer
 	switch name {
 	case "png":
-		err = png.Encode(&rbuf, resizedImg)
+		err = png.Encode(&convBuf, convImage)
 	case "jpeg":
-		err = jpeg.Encode(&rbuf, resizedImg, &jpeg.Options{Quality: 80})
+		err = jpeg.Encode(&convBuf, convImage, &jpeg.Options{Quality: 80})
 	case "gif":
-		err = gif.Encode(&rbuf, resizedImg, &gif.Options{NumColors: 256})
+		err = gif.Encode(&convBuf, convImage, &gif.Options{NumColors: 256})
 	default:
 		return errors.New("unsupported format")
 	}
@@ -107,16 +120,34 @@ func (r *Resizer) resizeImage(length int) error {
 		return err
 	}
 
-	r.resizedBytes = rbuf.Bytes()
-	rlen := len(r.resizedBytes)
+	r.convertedBytes = convBuf.Bytes()
+	convLen := len(r.convertedBytes)
 
-	roffset := slicePointer(r.resizedBytes)
-	fmt.Printf("resized image offset : %d\n", roffset)
-	fmt.Printf("resized image length : %d\n", rlen)
+	convOffset := slicePointer(r.convertedBytes)
+	fmt.Printf("converted image offset : %d\n", convOffset)
+	fmt.Printf("converted image length : %d\n", convLen)
 
-	js.Global().Call("setResult", roffset, rlen, name)
+	js.Global().Call("setResult", convOffset, convLen, name)
 
 	return nil
+}
+
+func (r *Resizer) resizeImage(img image.Image) image.Image {
+	size := img.Bounds().Size()
+	return resize.Resize(uint(size.X/10), uint(size.Y/10), img, resize.Lanczos3)
+}
+
+func (r *Resizer) grayscaleImage(img image.Image) image.Image {
+	bounds := img.Bounds()
+	dest := image.NewGray16(bounds)
+	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+		for x := bounds.Min.X; x < bounds.Max.X; x++ {
+			c := color.Gray16Model.Convert(img.At(x, y))
+			gray, _ := c.(color.Gray16)
+			dest.Set(x, y, gray)
+		}
+	}
+	return dest
 }
 
 func slicePointer(b []byte) uintptr {
