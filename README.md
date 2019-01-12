@@ -19,6 +19,8 @@ Comming soon...?
   - WebAssembly 内に JavaScript からメモリーをインポートするサンプル。
 - [calc](/calc)
   - 入力された 2 つの値を足し合わせて結果を表示するだけのサンプル。
+- [resize](/resize)
+  - 選択した画像を 1/10 にリサイズするサンプル。
 - [server](/server)
   - 簡単な Web サーバー
 
