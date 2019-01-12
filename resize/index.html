@@ -1,0 +1,79 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <script src="wasm_exec.js"></script>
+  </head>
+  <body>
+    <p><input type="file" id="file" name="file" disabled /></p>
+    <p id="result"></p>
+
+    <script>
+    var fileInput = document.getElementById("file");
+    var resultElm = document.getElementById("result");
+
+    if (!WebAssembly.instantiateStreaming) { // polyfill
+      WebAssembly.instantiateStreaming = async (resp, importObject) => {
+        const source = await (await resp).arrayBuffer();
+        return await WebAssembly.instantiate(source, importObject);
+      };
+    }
+
+    var inst = null;
+    var mem = null;
+    var fileBytes = null;
+    var resizeBytes = null;
+
+    fileInput.addEventListener("change", (e) => {
+      var files = e.target.files;
+      if (files.length == 0) {
+        return;
+      }
+
+      var file = files[0];
+      var reader = new FileReader();
+      reader.addEventListener("load", (e) => {
+        var buf = e.target.result;
+        fileBytes = new Uint8Array(buf);
+        resizeImage(fileBytes.length);
+      });
+      reader.readAsArrayBuffer(file);
+    }, false);
+
+    function setFileBytesToMem(offset) {
+      var memBytes = new Uint8Array(mem.buffer);
+      memBytes.set(fileBytes, offset);
+    }
+
+    function setResult(offset, length, name) {
+      resizeBytes = new Uint8Array(mem.buffer, offset, length);
+
+      var objURL = URL.createObjectURL(
+        new Blob([resizeBytes], { type: "image/" + name})
+      );
+
+      var image = new Image();
+      image.addEventListener("load", () => {
+        URL.revokeObjectURL(objURL);
+      }, false);
+      image.src = objURL;
+
+      clearChildren(resultElm);
+      resultElm.appendChild(image);
+    }
+
+    function clearChildren(elm) {
+      for (var child = elm.lastChild; child != null; child = elm.lastChild) {
+        elm.removeChild(child);
+      }
+    }
+
+    const go = new Go();
+    WebAssembly.instantiateStreaming(fetch("resize.wasm", {cache: "no-cache"}), go.importObject).then((result) => {
+      inst = result.instance;
+      mem = inst.exports.mem;
+      go.run(result.instance);
+      fileInput.disabled = false;
+    });
+    </script>
+  </body>
+</html>
